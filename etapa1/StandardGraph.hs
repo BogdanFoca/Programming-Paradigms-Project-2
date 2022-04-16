@@ -31,7 +31,7 @@ fromComponents :: Ord a
                => [a]              -- lista nodurilor
                -> [(a, a)]         -- lista arcelor
                -> StandardGraph a  -- graful construit
-fromComponents ns es = undefined
+fromComponents ns es = (S.fromList ns, S.fromList(es))
 
 {-
     *** TODO ***
@@ -39,7 +39,7 @@ fromComponents ns es = undefined
     Mulțimea nodurilor grafului.
 -}
 nodes :: StandardGraph a -> S.Set a
-nodes = undefined
+nodes = fst
 
 {-
     *** TODO ***
@@ -47,7 +47,7 @@ nodes = undefined
     Mulțimea arcelor grafului.
 -}
 edges :: StandardGraph a -> S.Set (a, a)
-edges = undefined
+edges = snd
 
 {-
     Exemple de grafuri
@@ -78,7 +78,7 @@ shouldBeTrue = graph1 == graph2
     fromList [2,3,4]
 -}
 outNeighbors :: Ord a => a -> StandardGraph a -> S.Set a
-outNeighbors node graph = undefined
+outNeighbors node graph = S.filter (\x -> elem (node, x) (edges graph)) (nodes graph)
 
 {-
     *** TODO ***
@@ -91,7 +91,7 @@ outNeighbors node graph = undefined
     fromList [4]
 -}
 inNeighbors :: Ord a => a -> StandardGraph a -> S.Set a
-inNeighbors node graph = undefined
+inNeighbors node graph = S.filter (\x -> elem (x, node) (edges graph)) (nodes graph)
 
 {-
     *** TODO ***
@@ -105,7 +105,7 @@ inNeighbors node graph = undefined
     (fromList [2,3,4],fromList [(2,3)])
 -}
 removeNode :: Ord a => a -> StandardGraph a -> StandardGraph a
-removeNode node graph = undefined
+removeNode node graph = (S.delete node (nodes graph), S.filter (\(x, y) -> x /= node && y /= node) (edges graph))
 
 {-
     *** TODO ***
@@ -124,7 +124,9 @@ splitNode :: Ord a
           -> [a]              -- nodurile cu care este înlocuit
           -> StandardGraph a  -- graful existent
           -> StandardGraph a  -- graful obținut
-splitNode old news graph = undefined
+splitNode old news graph = removeNode old (
+    S.union (nodes graph) (S.fromList news),
+    S.union (edges graph) (S.fromList $ [(x, y) | x <- news, y <- S.toList (outNeighbors old graph)] ++ [(x, y) | x <- S.toList (inNeighbors old graph), y <- news]))
 
 {-
     *** TODO ***
@@ -143,4 +145,7 @@ mergeNodes :: Ord a
            -> a                -- noul nod
            -> StandardGraph a  -- graful existent
            -> StandardGraph a  -- graful obținut
-mergeNodes prop node graph = undefined
+mergeNodes prop node graph =
+    let noduri = S.filter prop (nodes graph)
+        acc = graph
+    in foldl (\x y -> splitNode y [node] x) acc noduri

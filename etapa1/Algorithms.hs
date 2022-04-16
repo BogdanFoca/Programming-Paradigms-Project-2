@@ -26,6 +26,10 @@ type Graph a = StandardGraph a
     Hint: Scrieți o funcție auxiliară care primește ca parametru suplimentar
     o mulțime (set) care reține nodurile vizitate până în momentul curent.
 -}
+
+searchAux :: Ord a => ([a] -> [a] -> [a]) -> a -> Graph a -> [a] -> [a]
+searchAux f node graph set = undefined
+
 search :: Ord a
        => ([a] -> [a] -> [a])  -- funcția de îmbinare a listelor de noduri
        -> a                    -- nodul de pornire
