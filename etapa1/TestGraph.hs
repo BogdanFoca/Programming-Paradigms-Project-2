@@ -189,7 +189,7 @@ testCountIntermediate = tests 9 15
         testVal "test countIntermediate 7" (countIntermediate 1 6 testGraph5) $ Just (1, 3),
         testVal "test countIntermediate 8" (countIntermediate 6 5 testGraph5) $ Just (2, 1),
         testVal "test countIntermediate 9" (countIntermediate 1 8 testGraph6) $ Just (6, 4),
-        testVal "test countIntermediate 10" (countIntermediate 2 7 testGraph6) Nothing
+        testVal "test countIntermediate 10" (countIntermediate 2 7 testGraph6) Nothing,
     ]
 
 checkAll = vmCheck $ standardGraph ++ algorithms

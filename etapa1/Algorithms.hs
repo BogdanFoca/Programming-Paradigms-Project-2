@@ -27,15 +27,19 @@ type Graph a = StandardGraph a
     o mulțime (set) care reține nodurile vizitate până în momentul curent.
 -}
 
-searchAux :: Ord a => ([a] -> [a] -> [a]) -> a -> Graph a -> [a] -> [a]
-searchAux f node graph set = undefined
+searchAux :: Ord a => ([a] -> [a] -> [a]) -> Graph a -> [a] -> [a] -> [a]
+searchAux f graph set container = 
+    let news = f (filter (\x -> (not $ elem x set) && (not $ elem x container)) (S.toList (outNeighbors (head container) graph))) (tail container)
+    in if (container == [])
+        then (reverse set)
+        else searchAux f graph ((head container) : set) news
 
 search :: Ord a
        => ([a] -> [a] -> [a])  -- funcția de îmbinare a listelor de noduri
        -> a                    -- nodul de pornire
        -> Graph a              -- graful
        -> [a]                  -- lista obținută în urma parcurgerii
-search f node graph = undefined
+search f node graph = searchAux f graph [] [node]
 
 {-
     *** TODO ***
@@ -51,7 +55,7 @@ search f node graph = undefined
     [4,1,2,3]
 -}
 bfs :: Ord a => a -> Graph a -> [a]
-bfs = undefined
+bfs = search (\x y -> y ++ x)
 
 {-
     *** TODO ***
@@ -67,7 +71,7 @@ bfs = undefined
     [4,1,2,3]
 -}
 dfs :: Ord a => a -> Graph a -> [a]
-dfs = undefined
+dfs = search (\x y -> x ++ y)
 
 {-
     *** TODO ***
@@ -103,4 +107,10 @@ countIntermediate :: Ord a
                   -> a                 -- nodul destinație
                   -> StandardGraph a   -- graful
                   -> Maybe (Int, Int)  -- numărul de noduri expandate de BFS/DFS
-countIntermediate from to graph = undefined
+countIntermediate from to graph =
+    let x = length $ tail $ snd (span (/= from) (fst (span (/= to) (bfs from graph))))
+        y = length $ tail $ snd (span (/= from) (fst (span (/= to) (dfs from graph))))
+    in
+        if(x /= 0 && y /= 0)
+            then Just (x, y)
+            else Nothing
