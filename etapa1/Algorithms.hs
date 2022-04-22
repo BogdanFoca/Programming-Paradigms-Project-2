@@ -108,9 +108,13 @@ countIntermediate :: Ord a
                   -> StandardGraph a   -- graful
                   -> Maybe (Int, Int)  -- numărul de noduri expandate de BFS/DFS
 countIntermediate from to graph =
-    let x = length $ tail $ snd (span (/= from) (fst (span (/= to) (bfs from graph))))
-        y = length $ tail $ snd (span (/= from) (fst (span (/= to) (dfs from graph))))
+    let b = bfs from graph
+        d = dfs from graph
+        fb = fst (span (/= to) b)
+        fd = fst (span (/= to) d)
+        x = length $ tail $ snd (span (/= from) fb)
+        y = length $ tail $ snd (span (/= from) fd)
     in
-        if(x /= 0 && y /= 0)
-            then Just (x, y)
-            else Nothing
+        if(length fb == length (span (/= from) fb) || length fd == length (span (/= from) fd) || (not $ elem from b) || (not $ elem to b) || (not $ elem from d) || (not $ elem to d))
+            then Nothing
+            else Just (x, y)
