@@ -25,7 +25,11 @@ triangle = Connect (Node 1) (Connect (Node 2) (Node 3))
     Hint: S.union
 -}
 nodes :: Ord a => AlgebraicGraph a -> S.Set a
-nodes graph = undefined
+nodes graph
+nodes Empty = S.null
+nodes (Node n) = nc
+nodes (Overlay a1 a2) = S.union (nodes a1) (nodes a1)
+nodes (Connect a3 a4) = S.union (nodes a3) (nodes a4)
 
 {-
     *** TODO ***
