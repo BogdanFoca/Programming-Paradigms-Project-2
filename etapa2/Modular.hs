@@ -30,8 +30,16 @@ type Partition a = S.Set (S.Set a)
     > mapSingle (+10) [1,2,3]
     [[11,2,3],[1,12,3],[1,2,13]]
 -}
+replaceAtIndex :: Int -> a -> [a] -> [a]
+replaceAtIndex n item [] = []
+replaceAtIndex 0 item (_:xs) = item:xs
+replaceAtIndex n item (x:xs) = if n < 0 then (x:xs) else (x:replaceAtIndex (n-1) item xs)
+
 mapSingle :: (a -> a) -> [a] -> [[a]]
-mapSingle f xs = undefined
+mapSingle f [] = []
+mapSingle f xs = mapSingleAux 0
+    where
+    mapSingleAux index = if index == (length xs) - 1 then [replaceAtIndex index (f $ head $ (drop index xs)) xs] else [replaceAtIndex index (f $ head $ (drop index xs)) xs] ++ (mapSingleAux (index + 1))
 
 {-
     *** TODO ***
@@ -59,4 +67,7 @@ mapSingle f xs = undefined
     [[[1],[2],[3]],[[1,2],[3]],[[2],[1,3]],[[1],[2,3]],[[1,2,3]]]
 -}
 partitions :: [a] -> [[[a]]]
-partitions xs = undefined
+partitions xs = partitionsAux xs
+    where
+        partitionsAux [] = [[]]
+        partitionsAux (x:ls) = [ys | yss <- partitionsAux ls, ys <- [[[x]] ++ yss] ++ (mapSingle (x:) yss)]
