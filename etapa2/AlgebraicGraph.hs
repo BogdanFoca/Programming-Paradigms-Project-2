@@ -25,11 +25,10 @@ triangle = Connect (Node 1) (Connect (Node 2) (Node 3))
     Hint: S.union
 -}
 nodes :: Ord a => AlgebraicGraph a -> S.Set a
-nodes graph
-nodes Empty = S.null
-nodes (Node n) = nc
-nodes (Overlay a1 a2) = S.union (nodes a1) (nodes a1)
-nodes (Connect a3 a4) = S.union (nodes a3) (nodes a4)
+nodes Empty = S.empty
+nodes (Node n) = S.fromList [n]
+nodes (Overlay a1 a2) = S.union (nodes a1) (nodes a2)
+nodes (Connect a1 a2) = S.union (nodes a1) (nodes a2)
 
 {-
     *** TODO ***
@@ -39,7 +38,10 @@ nodes (Connect a3 a4) = S.union (nodes a3) (nodes a4)
     Hint: S.union, S.cartesianProduct
 -}
 edges :: Ord a => AlgebraicGraph a -> S.Set (a, a)
-edges graph = undefined
+edges Empty = S.empty
+edges (Node n) = S.empty
+edges (Overlay a1 a2) = S.union (edges a1) (edges a2)
+edges (Connect a1 a2) = S.union (S.union (S.cartesianProduct (nodes a1) (nodes a2)) (edges a1)) (edges a2)
 
 {-
     *** TODO ***
@@ -50,7 +52,10 @@ edges graph = undefined
     prea multe muchii inutile.
 -}
 outNeighbors :: Ord a => a -> AlgebraicGraph a -> S.Set a
-outNeighbors node graph = undefined
+outNeighbors node Empty = S.empty
+outNeighbors node (Node n) = S.empty
+outNeighbors node (Overlay a1 a2) = S.union (outNeighbors node a1) (outNeighbors node a2)
+outNeighbors node (Connect a1 a2) = S.union (S.union (S.map snd (S.filter (\x -> fst x == node) (S.cartesianProduct (nodes a1) (nodes a2)))) (outNeighbors node a1)) (outNeighbors node a2)
 
 {-
     *** TODO ***
@@ -61,7 +66,10 @@ outNeighbors node graph = undefined
     prea multe muchii inutile.
 -}
 inNeighbors :: Ord a => a -> AlgebraicGraph a -> S.Set a
-inNeighbors node graph = undefined
+inNeighbors node Empty = S.empty
+inNeighbors node (Node n) = S.empty
+inNeighbors node (Overlay a1 a2) = S.union (inNeighbors node a1) (inNeighbors node a2)
+inNeighbors node (Connect a1 a2) = S.union (S.union (S.map fst (S.filter (\x -> snd x == node) (S.cartesianProduct (nodes a1) (nodes a2)))) (inNeighbors node a1)) (inNeighbors node a2)
 
 {-
     *** TODO ***
@@ -76,7 +84,12 @@ inNeighbors node graph = undefined
     parametrul graph se modifică.
 -}
 removeNode :: Eq a => a -> AlgebraicGraph a -> AlgebraicGraph a
-removeNode node graph = undefined
+removeNode node graph = removeAux graph
+    where
+    removeAux Empty = Empty
+    removeAux (Node n) = if n == node then Empty else Node n
+    removeAux (Overlay a1 a2) = Overlay (removeAux a1) (removeAux a2)
+    removeAux (Connect a1 a2) = Connect (removeAux a1) (removeAux a2)
 
 {-
     *** TODO ***
@@ -92,7 +105,12 @@ splitNode :: Eq a
           -> [a]               -- nodurile cu care este înlocuit
           -> AlgebraicGraph a  -- graful existent
           -> AlgebraicGraph a  -- graful obținut
-splitNode old news graph = undefined
+splitNode old news graph = splitAux graph
+    where
+    splitAux Empty = Empty
+    splitAux (Node n) = if n == old then foldl (Overlay) Empty (map Node news) else Node n
+    splitAux (Overlay a1 a2) = Overlay (splitAux a1) (splitAux a2)
+    splitAux (Connect a1 a2) = Connect (splitAux a1) (splitAux a2)
 
 {-
     *** TODO ***
@@ -107,4 +125,9 @@ mergeNodes :: (a -> Bool)       -- proprietatea îndeplinită de nodurile îmbin
            -> a                 -- noul nod
            -> AlgebraicGraph a  -- graful existent
            -> AlgebraicGraph a  -- graful obținut
-mergeNodes prop node graph = undefined
+mergeNodes prop node graph = mergeAux graph
+    where
+    mergeAux Empty = Empty
+    mergeAux (Node n) = if prop n then Node node else Node n
+    mergeAux (Overlay a1 a2) = Overlay (mergeAux a1) (mergeAux a2)
+    mergeAux (Connect a1 a2) = Connect (mergeAux a1) (mergeAux a2)
