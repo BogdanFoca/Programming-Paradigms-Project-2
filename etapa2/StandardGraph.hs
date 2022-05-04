@@ -13,6 +13,7 @@ import qualified Data.Set as S
 
     type introduce un sinonim de tip, similar cu typedef din C.
 -}
+{- nodes si edges au fost redefinite ca o proprietate a grafului -}
 data StandardGraph a = StdGraph { nodes :: S.Set a, edges :: S.Set (a, a)} deriving Eq
 
 {-
@@ -27,6 +28,7 @@ data StandardGraph a = StdGraph { nodes :: S.Set a, edges :: S.Set (a, a)} deriv
     Este doar un detaliu, cu care nu veți opera explicit în această etapă.
     Veți întâlni această constrângere și în tipurile funcțiilor de mai jos.
 -}
+{- from components foloseste constructorul grafului pentru a ii atribui proprietatile -}
 fromComponents :: Ord a
                => [a]              -- lista nodurilor
                -> [(a, a)]         -- lista arcelor
