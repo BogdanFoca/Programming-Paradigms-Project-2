@@ -32,8 +32,16 @@ type Partition a = S.Set (S.Set a)
     > mapSingle (+ 10) [1,2,3]
     [[11,2,3],[1,12,3],[1,2,13]]
 -}
+replaceAtIndex :: Int -> a -> [a] -> [a]
+replaceAtIndex n item [] = []
+replaceAtIndex 0 item (_:xs) = item:xs
+replaceAtIndex n item (x:xs) = if n < 0 then (x:xs) else (x:replaceAtIndex (n-1) item xs)
+
 mapSingle :: (a -> a) -> [a] -> [[a]]
-mapSingle f xs = undefined
+mapSingle f [] = []
+mapSingle f xs = mapSingleAux 0
+    where
+    mapSingleAux index = if index == (length xs) - 1 then [replaceAtIndex index (f $ head $ (drop index xs)) xs] else [replaceAtIndex index (f $ head $ (drop index xs)) xs] ++ (mapSingleAux (index + 1))
 
 {-
     *** TODO ***
@@ -61,7 +69,10 @@ mapSingle f xs = undefined
     [[[1],[2],[3]],[[1,2],[3]],[[2],[1,3]],[[1],[2,3]],[[1,2,3]]]
 -}
 partitions :: [a] -> [[[a]]]
-partitions xs = undefined
+partitions xs = partitionsAux xs
+    where
+        partitionsAux [] = [[]]
+        partitionsAux (x:ls) = [ys | yss <- partitionsAux ls, ys <- [[[x]] ++ yss] ++ (mapSingle (x:) yss)]
 
 {-
     *** TODO ***
@@ -92,11 +103,18 @@ partitions xs = undefined
     > isModule (S.fromList [1,3]) diagram
     False
 -}
+isModuleAux :: Ord a => (a -> AlgebraicGraph a -> S.Set a) -> a -> AlgebraicGraph a -> S.Set a -> S.Set a
+isModuleAux f node1 graph exclude = S.difference (f node1 graph) exclude
+
 isModule :: Ord a
          => S.Set a
          -> Graph a
          -> Bool
-isModule set graph = undefined
+isModule set graph = let
+    first = head $ S.toList set
+    res = S.map (\x -> (isModuleAux outNeighbors first graph set) == (isModuleAux outNeighbors x graph set) && (isModuleAux inNeighbors first graph set) == (isModuleAux inNeighbors x graph set)) set
+    in
+    not $ elem False res
 
 {-
     *** TODO ***
@@ -135,7 +153,10 @@ isModularPartition :: Ord a
                    => Partition a
                    -> Graph a
                    -> Bool
-isModularPartition partition graph = undefined
+isModularPartition partition graph = let
+    res = S.map (\x -> isModule x graph) partition
+    in
+    not $ elem False res
 
 {-
     *** TODO ***
@@ -160,11 +181,14 @@ isModularPartition partition graph = undefined
     > maximalModularPartition <lista partițiilor> $ removeNode 5 diagram
     fromList [fromList [1,2],fromList [3,4]]
 -}
+partitionFunc :: Ord a => [a] -> [S.Set (S.Set a)]
+partitionFunc ls = map S.fromList (map (\x -> map S.fromList x) (partitions ls))
+
 maximalModularPartition :: Ord a
                         => [Partition a]
                         -> Graph a
                         -> Partition a
-maximalModularPartition partitions graph = undefined
+maximalModularPartition partitions graph = minimumBy (compare `on` (\x -> length x)) (filter (\x -> (length x > 1) && (isModularPartition x graph)) (partitionFunc $ S.toList (nodes graph)))
 
 {-
     Obține descompunerea modulară a unui graf. O puteți utiliza pentru
